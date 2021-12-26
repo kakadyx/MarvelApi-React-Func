@@ -9,21 +9,36 @@ class CharList extends Component {
     state = {
         charList: [],
         loading: true,
-        error: false
+        newCharsLoading: false,
+        error: false,
+        offset: 0,
+        charEnded: false,
     }
 
     marvelService = new MarvelService()
 
-    onCharsLoaded = (charList) => {
-        this.setState({charList})
-        this.setState({loading: false})
+    onCharsLoaded = (newCharList) => {
+        this.setState(({charList}) => ({charList: [...charList, ...newCharList]}))
+        this.setState({
+            loading: false,
+            newCharsLoading: false
+        })
+        if(newCharList.length < 9)
+            this.setState({charEnded: true})
     }
 
     getNewChars = () => {
-        this.setState({loading: true})
-        this.marvelService.getAllCharacters()
+        this.onCharsLoading()
+        this.setState({offset: this.state.offset + 9})
+        this.marvelService.getAllCharacters(9, this.state.offset)
             .then(this.onCharsLoaded)
             .catch(this.onError)
+    }
+
+    onCharsLoading = () => {
+        this.setState({
+            newCharsLoading: true,
+        })
     }
 
     componentDidMount(){
@@ -38,18 +53,22 @@ class CharList extends Component {
     }
 
     render(){
-        const {charList, loading, error} = this.state
+        const {charList, loading, error, newCharsLoading, charEnded} = this.state
         const {onCharSelected} = this.props
         const errorMessage = error ? <ErrorMessage/> : null
         const spinner = loading ? <Spinner/> : null
         const content = !(loading || error) ? <View onCharSelected={onCharSelected} charList={charList}/> : null
+        const buttonBlock = !newCharsLoading || loading ? 
+        (   <button style={{display: charEnded ? 'none' : ''}} onClick={this.getNewChars} className="button button__main button__long">
+                <div className="inner">load more</div>
+            </button>) : <Spinner />
+        
+            
         return (
             <div className="char__list">
                 {spinner || errorMessage}
                 {content}
-                <button className="button button__main button__long">
-                    <div className="inner">load more</div>
-                </button>
+                {buttonBlock}
             </div>
         )
     }
