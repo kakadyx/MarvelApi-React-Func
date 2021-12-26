@@ -3,6 +3,7 @@ import {Component} from 'react'
 import MarvelService from '../../services/MarvelService'
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
+import PropTypes from 'prop-types';
 
 class CharList extends Component {
     
@@ -57,7 +58,7 @@ class CharList extends Component {
         const {onCharSelected} = this.props
         const errorMessage = error ? <ErrorMessage/> : null
         const spinner = loading ? <Spinner/> : null
-        const content = !(loading || error) ? <View onCharSelected={onCharSelected} charList={charList}/> : null
+        const content = !(loading || error) ? <View charId={this.props.charId} onCharSelected={onCharSelected} charList={charList}/> : null
         const buttonBlock = !newCharsLoading || loading ? 
         (   <button style={{display: charEnded ? 'none' : ''}} onClick={this.getNewChars} className="button button__main button__long">
                 <div className="inner">load more</div>
@@ -75,13 +76,13 @@ class CharList extends Component {
     
 }
 
-const View = ({charList,onCharSelected}) => {
+const View = ({charId, charList,onCharSelected}) => {
     let renderList = []
 
     if(charList.length)
-        charList.forEach(item => renderList.push(
+        charList.forEach((item,i) => renderList.push(
            ( 
-            <li className="char__item" key={item.id} onClick={() => onCharSelected(item.id)}>
+            <li className={charId === item.id ? "char__item char__item_selected" : "char__item"} tabIndex={1+i} key={item.id} onClick={() => onCharSelected(item.id)}>
                 <img style={item.thumbnail.indexOf('not_available') > -1 ? {objectFit: 'fill'} : {}}  src={item.thumbnail} alt="char_img"/>
                 <div className="char__name">{item.name}</div>
             </li>
@@ -90,5 +91,8 @@ const View = ({charList,onCharSelected}) => {
     return (<ul className="char__grid">{renderList}</ul>)     
 }
 
+CharList.propTypes = {
+    onCharSelected: PropTypes.func.isRequired
+}
 
 export default CharList;
