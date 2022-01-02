@@ -1,70 +1,58 @@
 import './charList.scss';
-import {Component} from 'react'
 import MarvelService from '../../services/MarvelService'
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import PropTypes from 'prop-types';
-
-class CharList extends Component {
+import { useState, useEffect } from 'react';
+const CharList = (props) => {
+    const [charList, setCharList] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [newCharsLoading, setNewCharsLoading] = useState(false)
+    const [error, setError] = useState(false)
+    const [offset, setOffset] = useState(0)
+    const [charEnded, setCharEnded] = useState(false)
     
-    state = {
-        charList: [],
-        loading: true,
-        newCharsLoading: false,
-        error: false,
-        offset: 0,
-        charEnded: false,
-    }
 
-    marvelService = new MarvelService()
+    const marvelService = new MarvelService()
 
-    onCharsLoaded = (newCharList) => {
-        this.setState(({charList}) => ({charList: [...charList, ...newCharList]}))
-        this.setState({
-            loading: false,
-            newCharsLoading: false
-        })
+    const onCharsLoaded = (newCharList) => {
+        setCharList(charList => [...charList, ...newCharList])
+        setLoading(loading => false)
+        setNewCharsLoading(newChr => false)
         if(newCharList.length < 9)
-            this.setState({charEnded: true})
+           setCharEnded(chEn => true)
     }
 
-    getNewChars = () => {
-        this.onCharsLoading()
-        this.setState({offset: this.state.offset + 9})
-        this.marvelService.getAllCharacters(9, this.state.offset)
-            .then(this.onCharsLoaded)
-            .catch(this.onError)
+    const getNewChars = () => {
+        onCharsLoading()
+        setOffset(offset + 9)
+        marvelService.getAllCharacters(9, offset)
+            .then(onCharsLoaded)
+            .catch(onError)
     }
 
-    onCharsLoading = () => {
-        this.setState({
-            newCharsLoading: true,
-        })
+    const onCharsLoading = () => {
+        setNewCharsLoading(true)
     }
 
-    componentDidMount(){
-        this.getNewChars()
+    useEffect(()=> {
+        getNewChars()
+    }, [])
+
+    const onError = (err) => {
+        setLoading(false)
+        setError(true)
     }
 
-    onError = (err) => {
-        this.setState( {
-            error: true,
-            loading:false
-        })
-    }
-
-    render(){
-        const {charList, loading, error, newCharsLoading, charEnded} = this.state
-        const {onCharSelected} = this.props
+        const {onCharSelected} = props
         const errorMessage = error ? <ErrorMessage/> : null
         const spinner = loading ? <Spinner/> : null
-        const content = !(loading || error) ? <View charId={this.props.charId} onCharSelected={onCharSelected} charList={charList}/> : null
+        const content = !(loading || error) ? <View charId={props.charId} onCharSelected={onCharSelected} charList={charList}/> : null
         const buttonBlock = !newCharsLoading || loading ? 
-        (   <button style={{display: charEnded ? 'none' : ''}} onClick={this.getNewChars} className="button button__main button__long">
+        (   <button style={{display: charEnded ? 'none' : ''}} onClick={getNewChars} className="button button__main button__long">
                 <div className="inner">load more</div>
             </button>) : <Spinner />
         
-            
         return (
             <div className="char__list">
                 {spinner || errorMessage}
@@ -72,7 +60,6 @@ class CharList extends Component {
                 {buttonBlock}
             </div>
         )
-    }
     
 }
 
