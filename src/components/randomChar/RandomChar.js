@@ -1,33 +1,23 @@
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
-import MarvelService from '../../services/MarvelService'
+import useMarvelService from '../../services/MarvelService'
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import { useState, useEffect } from 'react';
 const RandomChar = (props) => {
     const [char, setChar] = useState({})
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(false)
-    const marvelService = new MarvelService()
+
+    const {loading, error, getCharacter, clearError} = useMarvelService()
 
     const onCharLoaded = (char) => {
-       setChar(char)
-       setLoading(l => false)
-    }
-
-    const onError = (err) => {
-        setError(true)
-        setLoading(false)
+        setChar(char)
     }
 
     const updateChar = () => {
-        setLoading(true)
-        //примерный диапазон персонажей
+        clearError()
         const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000)
-        marvelService
-            .getCharacter(id)
+        getCharacter(id)
             .then(onCharLoaded)
-            .catch(onError)
     }
 
     useEffect(()=> {
@@ -45,11 +35,12 @@ const RandomChar = (props) => {
  
         const errorMessage = error ? <ErrorMessage/> : null
         const spinner = loading ? <Spinner/> : null
-        const content = !(loading || error) ? <View formatDescription={formatDescription} char={char}/> : null
+        const content = !(loading || error || !char) ? <View formatDescription={formatDescription} char={char}/> : null
 
         return (
             <div className="randomchar">
-                {errorMessage || spinner}
+                {errorMessage}
+                {spinner}
                 {content}
                 <div className="randomchar__static">
                     <p className="randomchar__title">
@@ -71,9 +62,13 @@ const RandomChar = (props) => {
 
 const View = ({char,formatDescription}) => {
     const {thumbnail, name, homepage, wiki, description} = char
+    console.log(thumbnail)
+    let styleImg = {}
+    if(thumbnail)
+        styleImg = thumbnail.indexOf('not_available') > -1 ? {objectFit:'contain'} : {}
     return (
         <div className="randomchar__block">
-            <img src={thumbnail} style={thumbnail.indexOf('not_available') > -1 ? {objectFit: 'contain'} : {}} alt="Random character" className="randomchar__img"/>
+            <img src={thumbnail} style={styleImg}  alt="Random character" className="randomchar__img"/>
             <div className="randomchar__info">
                 <p className="randomchar__name">{name}</p>
                 <p className="randomchar__descr">

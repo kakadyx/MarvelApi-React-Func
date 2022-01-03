@@ -1,62 +1,45 @@
 import './charList.scss';
-import MarvelService from '../../services/MarvelService'
+import useMarvelService from '../../services/MarvelService'
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 const CharList = (props) => {
     const [charList, setCharList] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [newCharsLoading, setNewCharsLoading] = useState(false)
-    const [error, setError] = useState(false)
     const [offset, setOffset] = useState(0)
     const [charEnded, setCharEnded] = useState(false)
     
 
-    const marvelService = new MarvelService()
+    const {loading, error, getAllCharacters} = useMarvelService()
 
     const onCharsLoaded = (newCharList) => {
         setCharList(charList => [...charList, ...newCharList])
-        setLoading(loading => false)
-        setNewCharsLoading(newChr => false)
         if(newCharList.length < 9)
            setCharEnded(chEn => true)
     }
 
-    const getNewChars = () => {
-        onCharsLoading()
+    const getNewChars = (initial = false) => {
         setOffset(offset + 9)
-        marvelService.getAllCharacters(9, offset)
+        getAllCharacters(9, offset)
             .then(onCharsLoaded)
-            .catch(onError)
     }
 
-    const onCharsLoading = () => {
-        setNewCharsLoading(true)
-    }
 
     useEffect(()=> {
-        getNewChars()
+        getNewChars(true)
     }, [])
-
-    const onError = (err) => {
-        setLoading(false)
-        setError(true)
-    }
 
         const {onCharSelected} = props
         const errorMessage = error ? <ErrorMessage/> : null
-        const spinner = loading ? <Spinner/> : null
-        const content = !(loading || error) ? <View charId={props.charId} onCharSelected={onCharSelected} charList={charList}/> : null
-        const buttonBlock = !newCharsLoading || loading ? 
+        const buttonBlock = !loading ? 
         (   <button style={{display: charEnded ? 'none' : ''}} onClick={getNewChars} className="button button__main button__long">
                 <div className="inner">load more</div>
             </button>) : <Spinner />
         
         return (
             <div className="char__list">
-                {spinner || errorMessage}
-                {content}
+                {errorMessage}
+                <View charId={props.charId} onCharSelected={onCharSelected} charList={charList}/>
                 {buttonBlock}
             </div>
         )
