@@ -62,7 +62,6 @@ const RandomChar = (props) => {
 
 const View = ({char,formatDescription}) => {
     const {thumbnail, name, homepage, wiki, description} = char
-    console.log(thumbnail)
     let styleImg = {}
     if(thumbnail)
         styleImg = thumbnail.indexOf('not_available') > -1 ? {objectFit:'contain'} : {}

@@ -3,10 +3,10 @@ import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import useMarvelService from '../../services/MarvelService';
 import { useState, useEffect } from 'react/cjs/react.development';
-
+import { Link } from 'react-router-dom';
 const ComicsList = () => {
     const {loading, error, getAllComics} = useMarvelService()
-    const [offset, setOffset] = useState(0)
+    const [offset, setOffset] = useState(50)
     const [comics, setComics] = useState([])
     const [comicsEnded, setComicsEnded] = useState(false)
     useEffect(()=>{
@@ -47,11 +47,11 @@ const View = ({comics}) => {
         comics.forEach((comic, i) => {
             renderList.push(
                 <li key={i} className="comics__item">
-                <a href="#">
+                <Link to={`${comic.id}`} >
                     <img src={comic.thumbnail} alt="ultimate war" className="comics__item-img"/>
                     <div className="comics__item-name">{comic.title}</div>
                     <div className="comics__item-price">{comic.price || 'not available'}</div>
-                </a>
+                </Link>
                 </li>  
             )
             

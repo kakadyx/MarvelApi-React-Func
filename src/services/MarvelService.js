@@ -23,12 +23,20 @@ import { useHttp } from '../hooks/http.hook'
         return res.data.results.map(_transformComics)
     }
 
+    const getComic = async (id) => {
+        const res = await request(`${_apiBase}comics/${id}?${_apiKey}`)
+        const comic = res.data.results[0]
+        return _transformComics(comic)
+    }
+
     const _transformComics = (comics) => {
+        console.log(comics)
         return {
             id: comics.id,
             title: comics.title,
             description: comics.description,
-            price: comics.prices.price,
+            pages: comics.pageCount,
+            price: comics.prices[0].price + '$',
             thumbnail: `${comics.thumbnail.path}.${comics.thumbnail.extension}`,
         }
     }
@@ -46,7 +54,7 @@ import { useHttp } from '../hooks/http.hook'
         }
     }
 
-    return {loading, error, getAllCharacters, getCharacter, clearError, getAllComics}
+    return {loading, error, getAllCharacters, getCharacter, clearError, getAllComics, getComic}
 }
 
 export default useMarvelService
